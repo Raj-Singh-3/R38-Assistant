@@ -3,24 +3,99 @@ import {
   SendHorizonal, 
   Mic, 
   Paperclip, 
-  Users, 
   Bot, 
-  Smile, 
   Volume2, 
   VolumeX,
   Copy, 
   Trash2 
 } from 'lucide-react';
+import { useUser, UserButton } from '@clerk/clerk-react'; // Import UserButton
+import Tesseract from 'tesseract.js';
 import './Chatbot.css';
 
 const Chatbot = () => {
+  const { user } = useUser(); // Get authenticated user
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState('text');
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef(null);
   const speechSynthesisRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    // Initialize SpeechRecognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false; // Stop after one sentence
+      recognitionRef.current.interimResults = false; // Only final results
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        setIsListening(false); // Stop listening after capturing speech
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+      };
+    } else {
+      console.warn('SpeechRecognition is not supported in this browser.');
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check if the file is an image (PNG, JPG, JPEG)
+    const allowedFormats = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (!allowedFormats.includes(file.type)) {
+      window.alert("You can't share this file. Only PNG, JPG, and JPEG formats are allowed.");
+      return;
+    }
+
+    // Extract text from the image using Tesseract.js
+    setLoading(true);
+    Tesseract.recognize(
+      file,
+      'eng', // Language
+      {
+        logger: (info) => {
+          console.log(info); // Log progress (optional)
+        },
+      }
+    )
+      .then(({ data: { text } }) => {
+        setInput(text); // Set extracted text as input
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error('Error extracting text:', error);
+        setLoading(false);
+        window.alert('Failed to extract text from the image. Please try again.');
+      });
+  };
 
   const sendMessage = async (e) => {
     e?.preventDefault();
@@ -39,9 +114,7 @@ const Chatbot = () => {
     setInput('');
 
     try {
-      // const response = await fetch("http://localhost:5000/chat", {
       const response = await fetch("https://useless-85e9.onrender.com/chat", {
-
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
@@ -105,6 +178,9 @@ const Chatbot = () => {
   useEffect(() => {
     return () => {
       window.speechSynthesis.cancel();
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
     };
   }, []);
 
@@ -119,15 +195,21 @@ const Chatbot = () => {
           </div>
         </div>
         <div className="header-right">
-          <Users className="icon-button" />
-          <Smile className="icon-button" />
+          <UserButton afterSignOutUrl="/" /> {/* Clerk UserButton */}
         </div>
       </div>
 
       <div className="messages-area">
+        {/* {messages.length === 0 && (
+          <div className="welcome-message">
+            <p>Hi, {user?.firstName || 'User'}, how can I assist you?</p>
+          </div>
+        )}
+         */}
+
         {messages.length === 0 && (
           <div className="welcome-message">
-            <p>🤖 Start a conversation with your AI assistant</p>
+            <p>Hi {user?.firstName || 'User'}, I'm here to help! What can I do for you today?</p>
           </div>
         )}
 
@@ -163,11 +245,19 @@ const Chatbot = () => {
         <div className="input-modes">
           <Paperclip 
             className={`input-mode-icon ${mode === 'file' ? 'active' : ''}`} 
-            onClick={() => setMode('file')} 
+            onClick={() => fileInputRef.current.click()} 
+          />
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept=".png,.jpg,.jpeg"
+            onChange={handleFileUpload}
           />
           <Mic 
             className={`input-mode-icon ${mode === 'voice' ? 'active' : ''}`} 
-            onClick={() => setMode('voice')} 
+            onClick={toggleListening} 
+            style={{ backgroundColor: isListening ? '#007bff' : '' }}
           />
         </div>
         <input

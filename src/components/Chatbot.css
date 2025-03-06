@@ -86,7 +86,7 @@
     background-color: white;
     padding: 12px 15px;
     border-radius: var(--border-radius);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     position: relative;
   }
   
@@ -114,15 +114,15 @@
   .input-section {
     display: flex;
     align-items: center;
-    gap: 15px;
-    padding: 15px 20px;
+    gap: 10px;
+    padding: 10px 15px;
     background-color: white;
     border-top: 1px solid #e0e6ed;
   }
   
   .input-modes {
     display: flex;
-    gap: 15px;
+    gap: 10px;
   }
   
   .input-mode-icon {
@@ -137,10 +137,11 @@
   
   input {
     flex-grow: 1;
-    padding: 12px 15px;
+    padding: 10px 15px;
     border: 1px solid #e0e6ed;
     border-radius: var(--border-radius);
     outline: none;
+    font-size: 14px;
   }
   
   button {
@@ -148,15 +149,117 @@
     color: white;
     border: none;
     border-radius: var(--border-radius);
-    padding: 12px 15px;
+    padding: 10px 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    font-size: 14px;
   }
   
   .welcome-message {
     text-align: center;
     color: #718096;
     margin-top: 50px;
+  }
+  
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .chatbot-header {
+      padding: 10px 15px;
+    }
+  
+    .header-left h2 {
+      font-size: 16px;
+    }
+  
+    .header-left .header-icon {
+      width: 30px;
+      height: 30px;
+    }
+  
+    .messages-area {
+      padding: 15px;
+    }
+  
+    .message {
+      max-width: 90%;
+    }
+  
+    .message-content {
+      padding: 10px 12px;
+    }
+  
+    .input-section {
+      padding: 8px 12px;
+      gap: 8px;
+    }
+  
+    input {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+  
+    button {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+  
+    .input-modes {
+      gap: 8px;
+    }
+  
+    .input-mode-icon {
+      font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .chatbot-header {
+      padding: 8px 12px;
+    }
+  
+    .header-left h2 {
+      font-size: 14px;
+    }
+  
+    .header-left .header-icon {
+      width: 25px;
+      height: 25px;
+    }
+  
+    .messages-area {
+      padding: 10px;
+    }
+  
+    .message {
+      max-width: 95%;
+    }
+  
+    .message-content {
+      padding: 8px 10px;
+    }
+  
+    .input-section {
+      padding: 6px 10px;
+      gap: 6px;
+    }
+  
+    input {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  
+    button {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  
+    .input-modes {
+      gap: 6px;
+    }
+  
+    .input-mode-icon {
+      font-size: 12px;
+    }
   }

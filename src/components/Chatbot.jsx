@@ -100,7 +100,7 @@ const Chatbot = () => {
   const sendMessage = async (e) => {
     e?.preventDefault();
     if (!input.trim()) return;
-
+  
     setLoading(true);
     const newMessage = { 
       text: input, 
@@ -112,15 +112,23 @@ const Chatbot = () => {
     const updatedMessages = [...messages, newMessage];
     setMessages(updatedMessages);
     setInput('');
-
+  
     try {
-      const response = await fetch("https://useless-85e9.onrender.com/chat", {
+      const response = await fetch("https://useless-1.onrender.com/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input }),
       });
-      
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
       const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+  
       const botResponse = {
         text: data.response,
         sender: 'bot',
